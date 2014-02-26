@@ -1,6 +1,21 @@
 require "nokogiri"
 
+"""
+
+To run:
+  bundle exec ruby xml2go.rb <xml_file> <go_output_file>
+
+"""
+
+class String
+  def numeric?
+    Float(self) != nil rescue false
+  end
+end
+
 module Xml2Go
+
+  SUPPORTED_TYPES = ["bool",  "int", "float64", "string"]
 
   # .capitalize ignores Camel case
   def self.cap(s)
@@ -48,28 +63,55 @@ module Xml2Go
 
   def self.parse_element(element)
     struct_name = cap(element.name)
+    return if @@structs.has_key?(struct_name)
+    
     struct = Struct.new(struct_name)
-
     element.elements.each do |child|
       type = cap(child.name)
       var_name = type
-      
+      xml_tag = child.name
       # this is a struct
       if child.elements.count > 0 then
         type, plural = singularize(type)
         type = "[]" + type if plural
-        struct.properties << "#{var_name} #{type} `xml:\"#{child.name}\"`"
+
+        begin
+          xml_tag = child.namespace.prefix << ":" << xml_tag
+        rescue => e
+           #:)
+        end 
+        
+        struct.properties << "#{var_name} #{type} `xml:\"#{xml_tag}\"`"
         parse_element(child)
       
       else # this is a primitive
-
-        # only useful for vindicia xmls =D
-        type = child["xsi:type"].split(":").last if child["xsi:type"]
-        struct.properties << "#{var_name} #{type} `xml:\"#{child.name}\"`"
+        type = get_type(child)
+        struct.properties << "#{var_name} #{type} `xml:\"#{xml_tag}\"`"
       end
     end
     
-    @@structs[struct.name] = struct if !@@structs.has_key?(struct.name)
+    @@structs[struct.name] = struct 
+  end
+
+
+  def self.get_type(element)
+    
+    # check and see if the type is provided in the attributes
+    element.attributes.each do |k,v|
+      if k.include?("type") then
+        type = v.value.split(":").last
+        return type if SUPPORTED_TYPES.include?(type) 
+      end
+    end
+    
+    s = element.child.to_s 
+    if s.numeric? then
+      return "float64" if Float(s).to_s.length == s.length
+      return "int"
+    end
+    return "bool" if ["true", "false"].include?(s)
+    return "string"
+
   end
 
 
@@ -78,6 +120,8 @@ end
 # pass file as argument
 Xml2Go::load(File.open(ARGV[0], "r"))
 structs_results = Xml2Go::parse.values.join("\n")
-file_handle = File.new("structs.go", "w")
-file_handle.write("package acajoe\n\n")
+file_handle = File.new(ARGV[1], "w")
+file_handle.write("package main\n\n")
 file_handle.write(structs_results)
+file_handle.close()
+v = `gofmt -w --tabs=false --tabwidth=4 #{ARGV[1]}`
