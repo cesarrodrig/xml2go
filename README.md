@@ -35,16 +35,6 @@ Output:
 
     package main
 
-    type Vitamin struct {
-        A   int `xml:"a"`
-        C   int `xml:"c"`
-    }
-
-    type Mineral struct {
-        Ca  int `xml:"ca"`
-        Fe  int `xml:"fe"`
-    }
-
     type Food struct {
         Name         string    `xml:"name"`
         Mfr          string    `xml:"mfr"`
