@@ -42,15 +42,40 @@ module Xml2Go
   class Struct
     attr_accessor :properties, :name
 
-    def initialize(name)
+    # represents member variables
+    class Property
+      attr_accessor :type, :name, :xml_tag
 
+      def initialize(name, type, xml_tag)
+        @name = name  
+        @type = type
+        @xml_tag = xml_tag
+      end
+
+      def to_s
+        "#{@name} #{@type} `xml:\"#{@xml_tag}\"`"
+      end
+
+    end
+
+    def initialize(name)
       @name, _ = Xml2Go::singularize(name)
       # array strings
-      @properties = Set.new
+      @properties = {}
+    end
+
+    def add_property(var_name, type, xml_tag)
+      # struct already has that property, consider it an array
+      if @properties.has_key?(var_name) then
+        @properties[var_name].type = "[]" + @properties[var_name].type
+        @properties[var_name]. name << "s" if @properties[var_name].name[-1] != "s"
+      else
+        @properties[var_name] = Property.new(var_name, type, xml_tag)
+      end
     end
 
     def to_s
-      properties_string = properties.to_a.join("\n")
+      properties_string = properties.values.join("\n")
       "type #{@name} struct {\n
       #{properties_string}
       }
@@ -86,15 +111,15 @@ module Xml2Go
         begin
           xml_tag = child.namespace.prefix << ":" << xml_tag
         rescue => e
-           #:)
+           # :)
         end 
         
-        struct.properties << "#{var_name} #{type} `xml:\"#{xml_tag}\"`"
+        struct.add_property(var_name, type, xml_tag)
         parse_element(child)
       
       else # this is a primitive
         type = get_type(child)
-        struct.properties << "#{var_name} #{type} `xml:\"#{xml_tag}\"`"
+        struct.add_property(var_name, type, xml_tag)
       end
     end
     
