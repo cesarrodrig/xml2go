@@ -16,11 +16,19 @@ end
 module Xml2Go
 
   SUPPORTED_TYPES = ["bool",  "int", "float64", "string"]
+  INVALID_CHARS = ["-"]
 
   # .capitalize ignores Camel case
   def self.cap(s)
     s[0] = s[0].upcase
     return s
+  end
+
+  def self.normalize(s)
+    s = cap(s)
+    s.gsub!("-", "_")
+
+    return s.gsub(/(?<=_|^)(\w)/){$1.upcase}.gsub(/(?:_)(\w)/,'\1')
   end
 
   def self.singularize(s)
@@ -62,12 +70,12 @@ module Xml2Go
   end
 
   def self.parse_element(element)
-    struct_name = cap(element.name)
+    struct_name = normalize(element.name)
     return if @@structs.has_key?(struct_name)
     
     struct = Struct.new(struct_name)
     element.elements.each do |child|
-      type = cap(child.name)
+      type = normalize(child.name)
       var_name = type
       xml_tag = child.name
       # this is a struct
