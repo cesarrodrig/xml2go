@@ -72,7 +72,7 @@ module Xml2Go
     # adds member variable to struct
     def add_property(var_name, type, xml_tag)
       # struct already has that property, consider it an array
-      if @properties.has_key?(var_name) then
+      if @properties.has_key?(var_name) && !@properties[var_name].type.include?("[]") then
         @properties[var_name].type = "[]" + @properties[var_name].type
         @properties[var_name].name << "s" if @properties[var_name].name[-1] != "s"
       else
