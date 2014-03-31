@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+# load lib/ dir
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__),'..'))
+
+require 'lib/xml2go'
+
+# load the XML file
+Xml2Go::load(File.open(ARGV[0], "r"))
+# perform the parsing
+Xml2Go::parse
+# print the results
+Xml2Go::write_to_file(ARGV[1])
+# format the results
+v = `gofmt -w --tabs=false --tabwidth=4 #{ARGV[1]}`

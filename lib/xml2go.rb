@@ -3,7 +3,7 @@ require "nokogiri"
 """
 
 To run:
-  bundle exec ruby xml2go.rb <xml_file> <go_output_file>
+  bin/xml2go <xml_file> <go_output_file>
 
 """
 
@@ -169,7 +169,7 @@ module Xml2Go
   end
 
   def self.get_type(string)
-    #.text try to figure out the type
+    # try to figure out the type
     if string.numeric? then
       return "float64" if Float(string).to_s.length == string.length
       return "int"
@@ -178,13 +178,11 @@ module Xml2Go
     return "string"
   end
 
-end
+  def self.write_to_file(filename)
+    file_handle = File.new(filename, "w")
+    file_handle.write("package main\n\n")
+    file_handle.write(@@structs.values.join("\n"))
+    file_handle.close()
+  end
 
-# arg1 = xml_file, arg2 = go_output_file
-Xml2Go::load(File.open(ARGV[0], "r"))
-structs_results = Xml2Go::parse.values.join("\n")
-file_handle = File.new(ARGV[1], "w")
-file_handle.write("package main\n\n")
-file_handle.write(structs_results)
-file_handle.close()
-v = `gofmt -w --tabs=false --tabwidth=4 #{ARGV[1]}`
+end
