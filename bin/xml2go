@@ -5,11 +5,13 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__),'..'))
 
 require 'lib/xml2go'
 
+# parse the CLI args
+Xml2Go::parse_options(ARGV)
 # load the XML file
-Xml2Go::load(File.open(ARGV[0], "r"))
+Xml2Go::load(File.open(ARGV[-2], "r"))
 # perform the parsing
 Xml2Go::parse
 # print the results
-Xml2Go::write_to_file(ARGV[1])
+Xml2Go::write_to_file(ARGV[-1])
 # format the results
-v = `gofmt -w --tabs=false --tabwidth=4 #{ARGV[1]}`
+v = `gofmt -w --tabs=false --tabwidth=4 #{ARGV[-1]}`
