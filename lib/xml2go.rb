@@ -114,19 +114,35 @@ module Xml2Go
     end
   end
 
-  def self.add_child_struct(child, struct)
-    var_name, type, xml_tag = get_struct_member(child)
+  def self.add_xml_node(element, struct)
+    var_name, type, xml_tag = get_struct_member(element)
 
     type, plural = Xml2Go::singularize(type)
     type = "[]" + type if plural
 
     begin
-      xml_tag = child.namespace.prefix << ":" << xml_tag
+      xml_tag = element.namespace.prefix << ":" << xml_tag
     rescue => e
        # :)
     end
 
     struct.add_property(var_name, type, xml_tag)
+  end
+
+  def self.add_xml_primitive(element, struct)
+    var_name, type, xml_tag = get_struct_member(element)
+
+    # is this a primitive with attrs?
+    prim_attrs = element.attributes.select{ |k,v| !k.include?("type") }
+    if prim_attrs.length > 0 then
+
+      struct.add_property(var_name, type, xml_tag)
+      parse_element(element)
+    else
+
+      type = get_type_from_elem(element)
+      struct.add_property(var_name, type, xml_tag)
+    end
   end
 
   def self.parse_element(element)
@@ -143,27 +159,13 @@ module Xml2Go
     end
 
     element.elements.each do |child|
-      type = normalize(child.name)
-      var_name = type
-      xml_tag = child.name
-
       # this is a struct
       if child.elements.count > 0 then
-        add_child_struct(child, struct)
+        add_xml_node(child, struct)
         parse_element(child)
 
-      else # this is a primitive
-        # is this a primitive with attrs?
-        prim_attrs = child.attributes.select{ |k,v| !k.include?("type") }
-        if prim_attrs.length > 0 then
-
-          struct.add_property(var_name, type, xml_tag)
-          parse_element(child)
-        else
-
-          type = get_type_from_elem(child)
-          struct.add_property(var_name, type, xml_tag)
-        end
+      else # this is an XML primitive
+        add_xml_primitive(child, struct)
       end
     end
 
