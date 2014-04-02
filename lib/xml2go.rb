@@ -97,6 +97,16 @@ module Xml2Go
     return @@structs
   end
 
+  # adds the XML attrs of element to the Go struct
+  def self.add_attrs_to_struct(element, struct)
+    if element.respond_to?(:attributes) then
+      element.attributes.each do |attri, value|
+        var_name = attri.dup
+        struct.add_property(normalize(var_name), get_type(value.text), "#{attri},attr")
+      end
+    end
+  end
+
   def self.parse_element(element)
     struct_name = normalize(element.name)
     # TODO cesar: maybe we DO want to process repeated structs
@@ -107,12 +117,7 @@ module Xml2Go
 
     # add attributes as properties
     if @@config[:add_attrs] then
-      if element.respond_to?(:attributes) then
-        element.attributes.each do |attri, value|
-          var_name = attri.dup
-          struct.add_property(normalize(var_name), get_type(value.text), "#{attri},attr")
-        end
-      end
+      add_attrs_to_struct(element, struct)
     end
 
     element.elements.each do |child|
