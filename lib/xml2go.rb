@@ -97,6 +97,13 @@ module Xml2Go
     return @@structs
   end
 
+  def self.get_struct_member(element)
+    type = normalize(element.name)
+    var_name = type
+    xml_tag = element.name
+    [var_name, type, xml_tag]
+  end
+
   # adds the XML attrs of element to the Go struct
   def self.add_attrs_to_struct(element, struct)
     if element.respond_to?(:attributes) then
@@ -105,6 +112,21 @@ module Xml2Go
         struct.add_property(normalize(var_name), get_type(value.text), "#{attri},attr")
       end
     end
+  end
+
+  def self.add_child_struct(child, struct)
+    var_name, type, xml_tag = get_struct_member(child)
+
+    type, plural = Xml2Go::singularize(type)
+    type = "[]" + type if plural
+
+    begin
+      xml_tag = child.namespace.prefix << ":" << xml_tag
+    rescue => e
+       # :)
+    end
+
+    struct.add_property(var_name, type, xml_tag)
   end
 
   def self.parse_element(element)
@@ -127,16 +149,7 @@ module Xml2Go
 
       # this is a struct
       if child.elements.count > 0 then
-        type, plural = Xml2Go::singularize(type)
-        type = "[]" + type if plural
-
-        begin
-          xml_tag = child.namespace.prefix << ":" << xml_tag
-        rescue => e
-           # :)
-        end
-
-        struct.add_property(var_name, type, xml_tag)
+        add_child_struct(child, struct)
         parse_element(child)
 
       else # this is a primitive
