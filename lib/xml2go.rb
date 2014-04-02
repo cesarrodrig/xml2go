@@ -1,18 +1,6 @@
 require "nokogiri"
 require "optparse"
 
-"""
-
-To run:
-  bin/xml2go <xml_file> <go_output_file>
-
-"""
-
-class String
-  def numeric?
-    Float(self) != nil rescue false
-  end
-end
 
 module Xml2Go
 
@@ -33,6 +21,10 @@ module Xml2Go
     end
 
     return s.gsub(/(?<=_|^)(\w)/){$1.upcase}.gsub(/(?:_)(\w)/,'\1')
+  end
+
+  def self.numeric?(str)
+    Float(str) != nil rescue false
   end
 
   # take 's' out of string and return if it was plural or not
@@ -177,7 +169,7 @@ module Xml2Go
 
   def self.get_type(string)
     # try to figure out the type
-    if string.numeric? then
+    if numeric?(string) then
       return "float64" if Float(string).to_s.length == string.length
       return "int"
     end
