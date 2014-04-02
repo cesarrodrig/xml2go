@@ -94,7 +94,6 @@ module Xml2Go
 
   def self.parse
     parse_element(@@doc)
-    return @@structs
   end
 
   def self.get_struct_member(element)
