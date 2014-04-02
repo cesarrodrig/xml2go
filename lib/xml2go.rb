@@ -1,4 +1,5 @@
 require "nokogiri"
+require "optparse"
 
 """
 
@@ -74,7 +75,11 @@ module Xml2Go
       # struct already has that property, consider it an array
       if @properties.has_key?(var_name) && !@properties[var_name].type.include?("[]") then
         @properties[var_name].type = "[]" + @properties[var_name].type
-        @properties[var_name].name << "s" if @properties[var_name].name[-1] != "s"
+
+        if Xml2Go::config[:plural_arrays] then
+          @properties[var_name].name << "s" if @properties[var_name].name[-1] != "s"
+        end
+
       else
         @properties[var_name] = Property.new(var_name, type, xml_tag)
       end
@@ -109,10 +114,12 @@ module Xml2Go
     struct = Struct.new(struct_name)
 
     # add attributes as properties
-    if element.respond_to?(:attributes) then
-      element.attributes.each do |attri, value|
-        var_name = attri.dup
-        struct.add_property(normalize(var_name), get_type(value.text), "#{attri},attr")
+    if @@config[:add_attrs] then
+      if element.respond_to?(:attributes) then
+        element.attributes.each do |attri, value|
+          var_name = attri.dup
+          struct.add_property(normalize(var_name), get_type(value.text), "#{attri},attr")
+        end
       end
     end
 
@@ -183,6 +190,26 @@ module Xml2Go
     file_handle.write("package main\n\n")
     file_handle.write(@@structs.values.join("\n"))
     file_handle.close()
+  end
+
+  def self.parse_options(args)
+    @@config = {}
+    optparse = OptionParser.new do|opts|
+      opts.banner = "Usage: xml2go [options] <input_xml_file> <output_file>"
+
+      opts.on("-a", "--add-attrs", "Add XML attributes as part of the struct") do |a|
+        @@config[:add_attrs] = true
+      end
+
+      opts.on("-p", "--plural-arrays", "Pluralize array names") do |p|
+        @@config[:plural_arrays] = true
+      end
+    end
+    optparse.parse!(args)
+  end
+
+  def self.config
+    @@config
   end
 
 end
