@@ -175,11 +175,13 @@ module Xml2Go
   # if can't figure it out, returns 'string'
   def self.get_type_from_elem(element)
 
-    # check and see if the type is provided in the attributes
-    element.attributes.each do |k,v|
-      if k.include?("type") then
-        type = v.value.split(":").last
-        return type if SUPPORTED_TYPES.include?(type)
+    if @@config[:detect_type] then
+      # check and see if the type is provided in the attributes
+      element.attributes.each do |k,v|
+        if k.include?("type") then
+          type = v.value.split(":").last
+          return type if SUPPORTED_TYPES.include?(type)
+        end
       end
     end
 
@@ -215,6 +217,11 @@ module Xml2Go
       opts.on("-p", "--plural-arrays", "Pluralize array names") do |p|
         @@config[:plural_arrays] = true
       end
+
+      opts.on("-t", "--detect-type", "Attempt to detect the type of a primitive by searching in the attrs") do |p|
+        @@config[:detect_type] = true
+      end
+
     end
     optparse.parse!(args)
   end
