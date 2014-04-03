@@ -3,9 +3,9 @@ XML2Go
 
 Convert an XML file to a Go struct.
 
-Use
+Usage
 -------------------------
-    bundle exec ruby lib/xml2go.rb <xml_file> <go_output_file>
+    bin/xml2go [options] <xml_file> <go_output_file>
 
 Example
 -------------------------
