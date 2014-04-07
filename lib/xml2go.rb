@@ -113,6 +113,7 @@ module Xml2Go
     end
   end
 
+  # Add XML node, which contains more child nodes, as a member struct
   def self.add_xml_node(element, struct)
     var_name, type, xml_tag = get_struct_member(element)
 
@@ -128,6 +129,8 @@ module Xml2Go
     struct.add_property(var_name, type, xml_tag)
   end
 
+  # Add XML node, which contains no child nodes, as a primitive type
+  # if it contains attrs, add it as a struct.
   def self.add_xml_primitive(element, struct)
     var_name, type, xml_tag = get_struct_member(element)
 
@@ -218,7 +221,8 @@ module Xml2Go
         @@config[:plural_arrays] = true
       end
 
-      opts.on("-t", "--detect-type", "Attempt to detect the type of a primitive by searching in the attrs") do |p|
+      opts.on("-t", "--detect-type",
+          "Attempt to detect the type of a primitive by searching in the attrs") do |p|
         @@config[:detect_type] = true
       end
 
