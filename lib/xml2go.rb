@@ -1,6 +1,7 @@
 require "nokogiri"
 require "optparse"
 
+require 'xml2go/struct'
 
 module Xml2Go
 
@@ -9,8 +10,16 @@ module Xml2Go
 
   # ruby's .capitalize ignores Camel case
   def self.cap(s)
-    s[0] = s[0].upcase
-    return s
+    dup = s.dup
+    dup[0] = dup[0].upcase
+    return dup
+  end
+
+  # ruby's .capitalize ignores Camel case
+  def self.low(s)
+    dup = s.dup
+    dup[0] = dup[0].downcase
+    return dup
   end
 
   # remove invalid chars, capitalize and camelcase it
@@ -36,55 +45,9 @@ module Xml2Go
     end
   end
 
-  # class representing a Go struct
-  class Struct
-    attr_accessor :fields, :name
-
-    # represents member variables
-    class Field
-      attr_accessor :type, :name, :xml_tag
-
-      def initialize(name, type, xml_tag)
-        @name = name
-        @type = type
-        @xml_tag = xml_tag
-      end
-
-      def to_s
-        "#{@name} #{@type} `xml:\"#{@xml_tag}\"`"
-      end
-
-    end
-
-    def initialize(name)
-      # @name, _ = Xml2Go::singularize(name)
-      @name = name
-      @fields = {}
-    end
-
-    # adds member variable to struct
-    def add_property(var_name, type, xml_tag)
-      # struct already has that property, consider it an array
-      if @fields.has_key?(var_name) && !@fields[var_name].type.include?("[]") then
-        @fields[var_name].type = "[]" + @fields[var_name].type
-
-        if Xml2Go::config[:plural_arrays] then
-          @fields[var_name].name << "s" if @fields[var_name].name[-1] != "s"
-        end
-
-      else
-        @fields[var_name] = Field.new(var_name, type, xml_tag)
-      end
-    end
-
-    def to_s
-      fields_string = fields.values.join("\n")
-      "type #{@name} struct {\n
-      #{fields_string}
-      }
-      "
-    end
-
+  def self.get_const_name(str)
+    final_str = ""
+    return str.gsub(/([A-Z])/){|c| "_#{c}"}.gsub(/^_/, "").upcase
   end
 
   def self.load(file_handle)
@@ -143,7 +106,7 @@ module Xml2Go
     else
 
       type = get_type_from_elem(element)
-      struct.add_property(var_name, type, xml_tag)
+      struct.add_property(var_name, type, xml_tag, element.text)
     end
   end
 
@@ -153,7 +116,7 @@ module Xml2Go
     # to capture arrays don't process to structs
     return if @@structs.has_key?(struct_name)
 
-    struct = Struct.new(struct_name)
+    struct = Xml2Go::Struct.new(struct_name)
 
     # add attributes as fields
     if @@config[:add_attrs] then
@@ -232,6 +195,16 @@ module Xml2Go
 
   def self.config
     @@config
+  end
+
+  def self.write_mocks_to_file(filename)
+    file_handle = File.new(filename, "w")
+    file_handle.write("package main\n\n")
+    consts = @@structs.values.map{ |v| v.get_consts }
+    file_handle.write(consts.join("\n"))
+    blobs = @@structs.values.map { |v| v.to_declaration}
+    file_handle.write(blobs.join("\n"))
+    file_handle.close()
   end
 
 end
