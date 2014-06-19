@@ -35,28 +35,6 @@ module Xml2Go
     file_handle.close()
   end
 
-  def self.parse_options(args)
-    @@config = {}
-    optparse = OptionParser.new do|opts|
-      opts.banner = "Usage: xml2go [options] <input_xml_file> <output_file>"
-
-      opts.on("-a", "--add-attrs", "Add XML attributes as part of the struct") do |a|
-        @@config[:add_attrs] = true
-      end
-
-      opts.on("-p", "--plural-arrays", "Pluralize array names") do |p|
-        @@config[:plural_arrays] = true
-      end
-
-      opts.on("-t", "--detect-type",
-          "Attempt to detect the type of a primitive by searching in the attrs") do |p|
-        @@config[:detect_type] = true
-      end
-
-    end
-    optparse.parse!(args)
-  end
-
   def self.write_mocks_to_file(filename)
     file_handle = File.new(filename, "w")
     file_handle.write("package main\n\n")
