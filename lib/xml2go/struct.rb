@@ -47,9 +47,11 @@ module Xml2Go
       if @fields.has_key?(var_name) && !@fields[var_name].type.include?("[]") then
         @fields[var_name].type = "[]" + @fields[var_name].type
 
+=begin TODO
         if Xml2Go::config[:plural_arrays] then
           @fields[var_name].name << "s" if @fields[var_name].name[-1] != "s"
         end
+=end
 
       else
         @fields[var_name] = Field.new(var_name, type, xml_tag, value)

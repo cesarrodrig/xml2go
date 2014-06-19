@@ -19,6 +19,15 @@ module Xml2Go
       return s
     end
 
+
+    # ruby's .capitalize ignores Camel case
+    def low(s)
+      dup = s.dup
+      dup[0] = dup[0].downcase
+      return dup
+    end
+
+
     # remove invalid chars, capitalize and camelcase it
     def normalize(s)
       s = cap(s)
@@ -63,7 +72,7 @@ module Xml2Go
     def add_xml_node(element, struct)
       var_name, type, xml_tag = get_struct_member(element)
 
-      type, plural = Xml2Go::singularize(type)
+      type, plural = singularize(type)
       type = "[]" + type if plural
 
       begin
@@ -99,10 +108,10 @@ module Xml2Go
       # to capture arrays don't process to structs
       return if @structs.has_key?(struct_name)
 
-      struct = Struct.new(struct_name)
+      struct = Xml2Go::Struct.new(struct_name)
 
       # add attributes as properties
-      if @@config[:add_attrs] then
+      if @config[:add_attrs] then
         add_attrs_to_struct(element, struct)
       end
 
@@ -124,7 +133,7 @@ module Xml2Go
     # if can't figure it out, returns 'string'
     def get_type_from_elem(element)
 
-      if @@config[:detect_type] then
+      if @config[:detect_type] then
         # check and see if the type is provided in the attributes
         element.attributes.each do |k,v|
           if k.include?("type") then

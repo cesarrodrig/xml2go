@@ -2,12 +2,34 @@
 
 require 'xml2go'
 
+def parse_options(args)
+  @@config = {}
+  optparse = OptionParser.new do|opts|
+    opts.banner = "Usage: xml2go [options] <input_xml_file> <output_file>"
+
+    opts.on("-a", "--add-attrs", "Add XML attributes as part of the struct") do |a|
+      @@config[:add_attrs] = true
+    end
+
+    opts.on("-p", "--plural-arrays", "Pluralize array names") do |p|
+      @@config[:plural_arrays] = true
+    end
+
+    opts.on("-t", "--detect-type",
+        "Attempt to detect the type of a primitive by searching in the attrs") do |p|
+      @@config[:detect_type] = true
+    end
+
+  end
+  optparse.parse!(args)
+end
+
 # parse the CLI args
-Xml2Go::parse_options(ARGV)
+parse_options(ARGV)
 # load the XML file
 Xml2Go::load(File.open(ARGV[-2], "r"))
 # perform the parsing
-Xml2Go::parse
+Xml2Go::parse(@@config)
 # print the results
 Xml2Go::write_to_file(ARGV[-1])
 # format the results
