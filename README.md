@@ -1,11 +1,11 @@
 XML2Go
 =========================
 
-Convert an XML file to a Go struct.
+Convert an XML file to Go structs.
 
 Usage
 -------------------------
-    bin/xml2go [options] <xml_file> <go_output_file>
+    xml2go [options] <xml_file> <go_output_file>
 
 Example
 -------------------------
