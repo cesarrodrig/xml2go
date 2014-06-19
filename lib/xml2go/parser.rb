@@ -44,11 +44,11 @@ module Xml2Go
 
     # take 's' out of string and return if it was plural or not
     def singularize(string)
-      return [string, false]
       if string[-1] == "s" then
-          string = string[0..-2]
-          return [string, true]
+          s = string[0..-2]
+          return [s, true]
       end
+      return [string, false]
     end
 
     def get_struct_member(element)
@@ -62,13 +62,7 @@ module Xml2Go
       if struct.fields.has_key?(var_name) && 
           !struct.fields[var_name].type.include?("[]") then
         
-        type = struct.fields[var_name].type
-        # Ignore the 's' at the end
-        if type[-1] == "s" then
-          # update the struct
-          @structs[type].name = type[0..-2]
-          type = type[0..-2]
-        end
+        type, sing = singularize(struct.fields[var_name].type)
 
         struct.fields[var_name].type = "[]" + type
 
