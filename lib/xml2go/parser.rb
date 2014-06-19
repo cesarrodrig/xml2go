@@ -58,12 +58,35 @@ module Xml2Go
       [var_name, type, xml_tag]
     end
 
+    def add_field_to_struct(struct, var_name, type, xml_tag)
+      if struct.fields.has_key?(var_name) && 
+          !struct.fields[var_name].type.include?("[]") then
+        
+        type = struct.fields[var_name].type
+        # Ignore the 's' at the end
+        if type[-1] == "s" then
+          # update the struct
+          @structs[type].name = type[0..-2]
+          type = type[0..-2]
+        end
+
+        struct.fields[var_name].type = "[]" + type
+
+        if @config[:plural_arrays] then
+          struct.fields[var_name].name << "s" if struct.fields[var_name].name[-1] != "s"
+        end
+
+      else
+        struct.add_field(var_name, type, xml_tag)
+      end
+    end
+
     # adds the XML attrs of element to the Go struct
     def add_attrs_to_struct(element, struct)
       if element.respond_to?(:attributes) then
         element.attributes.each do |attri, value|
           var_name = attri.dup
-          struct.add_field(normalize(var_name), get_type(value.text), "#{attri},attr")
+          add_field_to_struct(struct, normalize(var_name), get_type(value.text), "#{attri},attr")
         end
       end
     end
@@ -81,7 +104,7 @@ module Xml2Go
          # :)
       end
 
-      struct.add_field(var_name, type, xml_tag)
+      add_field_to_struct(struct, var_name, type, xml_tag)
     end
 
     # Add XML node, which contains no child nodes, as a primitive type
@@ -93,12 +116,12 @@ module Xml2Go
       prim_attrs = element.attributes.select{ |k,v| !k.include?("type") }
       if prim_attrs.length > 0 then
 
-        struct.add_field(var_name, type, xml_tag)
+        add_field_to_struct(struct, var_name, type, xml_tag)
         parse_element(element)
       else
 
         type = get_type_from_elem(element)
-        struct.add_field(var_name, type, xml_tag)
+        add_field_to_struct(struct, var_name, type, xml_tag)
       end
     end
 
