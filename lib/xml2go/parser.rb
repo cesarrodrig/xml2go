@@ -63,7 +63,7 @@ module Xml2Go
       if element.respond_to?(:attributes) then
         element.attributes.each do |attri, value|
           var_name = attri.dup
-          struct.add_property(normalize(var_name), get_type(value.text), "#{attri},attr")
+          struct.add_field(normalize(var_name), get_type(value.text), "#{attri},attr")
         end
       end
     end
@@ -81,7 +81,7 @@ module Xml2Go
          # :)
       end
 
-      struct.add_property(var_name, type, xml_tag)
+      struct.add_field(var_name, type, xml_tag)
     end
 
     # Add XML node, which contains no child nodes, as a primitive type
@@ -93,12 +93,12 @@ module Xml2Go
       prim_attrs = element.attributes.select{ |k,v| !k.include?("type") }
       if prim_attrs.length > 0 then
 
-        struct.add_property(var_name, type, xml_tag)
+        struct.add_field(var_name, type, xml_tag)
         parse_element(element)
       else
 
         type = get_type_from_elem(element)
-        struct.add_property(var_name, type, xml_tag)
+        struct.add_field(var_name, type, xml_tag)
       end
     end
 

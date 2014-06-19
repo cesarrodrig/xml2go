@@ -42,8 +42,8 @@ module Xml2Go
     end
 
     # adds member variable to struct
-    def add_property(var_name, type, xml_tag, value=nil)
-      # struct already has that property, consider it an array
+    def add_field(var_name, type, xml_tag, value=nil)
+      # struct already has that field, consider it an array
       if @fields.has_key?(var_name) && !@fields[var_name].type.include?("[]") then
         @fields[var_name].type = "[]" + @fields[var_name].type
 
