@@ -1,9 +1,6 @@
 #!/usr/bin/env ruby
 
-# load lib/ dir
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__),'..'))
-
-require 'lib/xml2go'
+require 'xml2go'
 
 # parse the CLI args
 Xml2Go::parse_options(ARGV)
