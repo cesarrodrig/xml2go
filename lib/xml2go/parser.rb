@@ -59,9 +59,9 @@ module Xml2Go
     end
 
     def add_field_to_struct(struct, var_name, type, xml_tag)
-      if struct.fields.has_key?(var_name) && 
+      if struct.fields.has_key?(var_name) &&
           !struct.fields[var_name].type.include?("[]") then
-        
+
         type, sing = singularize(struct.fields[var_name].type)
 
         struct.fields[var_name].type = "[]" + type
