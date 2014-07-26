@@ -33,10 +33,10 @@ module Xml2Go
 
   # class representing a Go struct
   class Struct
-    attr_accessor :fields, :name
+    attr_accessor :fields, :type
 
-    def initialize(name)
-      @name = name
+    def initialize(type)
+      @type = type
       @fields = {}
     end
 
@@ -52,7 +52,7 @@ module Xml2Go
 
     def to_s
       fields_string = @fields.values.join("\n")
-      "type #{@name} struct {\n
+      "type #{@type} struct {\n
       #{fields_string}
       }
       "
@@ -60,14 +60,14 @@ module Xml2Go
 
     def to_declaration
       fields_string = @fields.values.map { |v| v.to_declaration}
-      "#{Xml2Go::low(@name)} := #{@name} {
+      "#{Xml2Go::low(@type)} := #{@type} {
       #{fields_string.join("\n")}
       }"
     end
 
     def get_consts
       consts_string = @fields.values.map{ |v| v.to_const}
-      "// #{@name} info \n" << consts_string.join("\n")
+      "// #{@type} info \n" << consts_string.join("\n")
     end
 
   end

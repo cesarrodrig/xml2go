@@ -143,7 +143,7 @@ module Xml2Go
         end
       end
 
-      @structs[struct.name] = struct
+      @structs[struct.type] = struct
     end
 
     # analyses the xml element to try and fetch the type
