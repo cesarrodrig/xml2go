@@ -1,39 +1,39 @@
 
 module Xml2Go
 
+  # represents member variables
+  class Field
+    attr_accessor :type, :name, :xml_tag, :value
+
+    def initialize(name, type, xml_tag, value)
+      @name = name
+      @type = type
+      @xml_tag = xml_tag
+      @value = value
+      @const_name = Xml2Go::get_const_name(@name)
+    end
+
+    def to_s
+      "#{@name} #{@type} `xml:\"#{@xml_tag}\"`"
+    end
+
+    def to_declaration
+      value = @value.nil? ? Xml2Go::low(@name) : @const_name
+      "#{@name}: #{value},"
+    end
+
+    def to_const
+      if !value.nil? then
+        return "#{@const_name} = \"#{@value}\""
+      end
+      return ""
+    end
+
+  end # class Field
+
   # class representing a Go struct
   class Struct
     attr_accessor :fields, :name
-
-    # represents member variables
-    class Field
-      attr_accessor :type, :name, :xml_tag, :value
-
-      def initialize(name, type, xml_tag, value)
-        @name = name
-        @type = type
-        @xml_tag = xml_tag
-        @value = value
-        @const_name = Xml2Go::get_const_name(@name)
-      end
-
-      def to_s
-        "#{@name} #{@type} `xml:\"#{@xml_tag}\"`"
-      end
-
-      def to_declaration
-        value = @value.nil? ? Xml2Go::low(@name) : @const_name
-        "#{@name}: #{value},"
-      end
-
-      def to_const
-        if !value.nil? then
-          return "#{@const_name} = \"#{@value}\""
-        end
-        return ""
-      end
-
-    end
 
     def initialize(name)
       @name = name
@@ -71,4 +71,6 @@ module Xml2Go
     end
 
   end
+
+
 end
