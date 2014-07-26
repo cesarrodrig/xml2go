@@ -44,7 +44,8 @@ module Xml2Go
 
     # take 's' out of string and return if it was plural or not
     def singularize(string)
-      if string[-1] == "s" then
+      # I need a singulizer util :(
+      if string[-1] == "s" && string[-1] != string[-2] then
           s = string[0..-2]
           return [s, true]
       end
@@ -121,6 +122,7 @@ module Xml2Go
 
     def parse_element(element)
       struct_name = normalize(element.name)
+      struct_name, s = singularize(struct_name)
       # TODO: maybe we DO want to process repeated structs
       # to capture arrays don't process to structs
       return if @structs.has_key?(struct_name)
