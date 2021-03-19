@@ -15,6 +15,10 @@ def parse_options(args)
       $config[:plural_arrays] = true
     end
 
+    opts.on("-s", "--singularize", "Singularize element names") do |p|
+      $config[:singularize] = true
+    end
+
     opts.on("-t", "--detect-type",
         "Attempt to detect the type of a primitive by searching in the attrs") do |p|
       $config[:detect_type] = true
@@ -22,6 +26,10 @@ def parse_options(args)
 
   end
   optparse.parse!(args)
+  if ARGV.length != 2 then
+    puts optparse.help
+    exit 1
+  end
 end
 
 # parse the CLI args

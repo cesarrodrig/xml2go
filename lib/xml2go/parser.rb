@@ -47,8 +47,8 @@ module Xml2Go
     def singularize(string)
       # I need a singulizer util :(
       if string[-1] == "s" && string[-1] != string[-2] then
-          s = string[0..-2]
-          return [s, true]
+        s = @config[:singularize] ? s = string[0..-2] : string
+        return [s, true]
       end
       return [string, false]
     end
@@ -64,7 +64,7 @@ module Xml2Go
       if struct.fields.has_key?(var_name) &&
           !struct.fields[var_name].type.include?("[]") then
 
-        type, sing = singularize(struct.fields[var_name].type)
+        type, plural = singularize(struct.fields[var_name].type)
 
         struct.fields[var_name].type = "[]" + type
 
