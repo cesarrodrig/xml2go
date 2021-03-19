@@ -15,8 +15,9 @@ module Xml2Go
 
     # ruby's .capitalize ignores Camel case
     def cap(s)
-      s[0] = s[0].upcase
-      return s
+      dup = s.dup
+      dup[0] = dup[0].upcase
+      return dup
     end
 
 
